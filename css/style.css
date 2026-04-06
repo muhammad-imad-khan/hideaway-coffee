@@ -1037,13 +1037,41 @@ em { font-style: italic; color: var(--caramel); }
   will-change: transform;
 }
 
+/* ─── MOUSE TRAIL ────────────────────────────── */
+.trail-dot {
+  position: fixed;
+  top: -3px; left: -3px;
+  width: 6px; height: 6px;
+  background: radial-gradient(circle, var(--caramel) 0%, rgba(201,168,130,0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9997;
+  will-change: transform, opacity;
+}
+
+/* ─── TEXT TEARING ───────────────────────────── */
+.tear-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.section-title,
+.hero-sub {
+  overflow: visible;
+}
+.tear-slice {
+  transition: transform 0.12s cubic-bezier(.4,0,.2,1);
+}
+
 /* ─── REDUCED MOTION ─────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .cursor-dot, .cursor-ring { display: none; }
+  .trail-dot { display: none; }
   * { cursor: auto !important; }
   .word-inner { transform: none; opacity: 1; }
   .hero-blob { transition: none; }
   #hero-canvas { display: none; }
+  .tear-slice { transform: none !important; }
 }
 
 /* ─── UTILITIES ──────────────────────────────── */

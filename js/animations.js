@@ -314,21 +314,162 @@
     const title = document.querySelector('.hero-title');
     if (!title) return;
 
-    // Wrap each word in a span
     const html = title.innerHTML;
     const wrapped = html.replace(/(<[^>]+>)|(\S+)/g, (match, tag, word) => {
-      if (tag) return tag; // keep HTML tags as-is
+      if (tag) return tag;
       return `<span class="word-reveal"><span class="word-inner">${word}</span></span>`;
     });
     title.innerHTML = wrapped;
 
-    // Animate after a short delay
     const words = title.querySelectorAll('.word-inner');
     words.forEach((word, i) => {
       setTimeout(() => {
         word.classList.add('word-visible');
       }, 300 + i * 80);
     });
+  }
+
+
+  // ═══════════════════════════════════════════════
+  //  7. MOUSE TRAIL — Fading ribbon behind cursor
+  // ═══════════════════════════════════════════════
+
+  function initMouseTrail() {
+    if (window.matchMedia('(pointer: coarse)').matches) return;
+
+    const TRAIL_LENGTH = 28;
+    const trail = [];
+
+    // Create trail dots
+    for (let i = 0; i < TRAIL_LENGTH; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'trail-dot';
+      document.body.appendChild(dot);
+      trail.push({ el: dot, x: 0, y: 0 });
+    }
+
+    function updateTrail() {
+      // Lead dot follows the mouse directly
+      trail[0].x = mouse.x;
+      trail[0].y = mouse.y;
+
+      // Each subsequent dot follows the one before it with easing
+      for (let i = 1; i < TRAIL_LENGTH; i++) {
+        const ease = 0.35 - (i * 0.008); // slower toward the tail
+        trail[i].x += (trail[i - 1].x - trail[i].x) * Math.max(ease, 0.05);
+        trail[i].y += (trail[i - 1].y - trail[i].y) * Math.max(ease, 0.05);
+      }
+
+      // Apply position, scale, and opacity
+      for (let i = 0; i < TRAIL_LENGTH; i++) {
+        const t = i / TRAIL_LENGTH;
+        const scale = 1 - t * 0.85;    // shrink toward tail
+        const opacity = 1 - t;          // fade toward tail
+        trail[i].el.style.transform = `translate(${trail[i].x}px, ${trail[i].y}px) scale(${scale})`;
+        trail[i].el.style.opacity = opacity * 0.4;
+      }
+
+      requestAnimationFrame(updateTrail);
+    }
+    updateTrail();
+  }
+
+
+  // ═══════════════════════════════════════════════
+  //  8. TEXT TEARING — Horizontal slice distortion
+  // ═══════════════════════════════════════════════
+
+  function initTextTearing() {
+    const targets = document.querySelectorAll('.section-title, .hero-sub');
+    if (!targets.length) return;
+
+    const SLICE_COUNT = 5;
+    const PROXIMITY = 300;     // px distance to start tearing
+    const MAX_SHIFT = 12;      // max px horizontal shift
+    const tearData = [];
+
+    targets.forEach(el => {
+      // Preserve original structure
+      const text = el.innerHTML;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'tear-wrap';
+      wrapper.setAttribute('aria-hidden', 'true');
+
+      // Create slices using clip-path
+      for (let i = 0; i < SLICE_COUNT; i++) {
+        const slice = document.createElement('div');
+        slice.className = 'tear-slice';
+        slice.innerHTML = text;
+
+        // Each slice shows a horizontal band
+        const top = (i / SLICE_COUNT) * 100;
+        const bottom = ((i + 1) / SLICE_COUNT) * 100;
+        slice.style.clipPath = `polygon(0 ${top}%, 100% ${top}%, 100% ${bottom}%, 0 ${bottom}%)`;
+        slice.style.position = 'absolute';
+        slice.style.inset = '0';
+        slice.style.willChange = 'transform';
+        wrapper.appendChild(slice);
+      }
+
+      // Replace original content with tearing wrapper + hidden accessible copy
+      const accessible = document.createElement('span');
+      accessible.className = 'sr-only';
+      accessible.textContent = el.textContent;
+
+      el.style.position = 'relative';
+      el.innerHTML = '';
+      el.appendChild(accessible);
+      el.appendChild(wrapper);
+
+      tearData.push({
+        el,
+        wrapper,
+        slices: wrapper.querySelectorAll('.tear-slice')
+      });
+    });
+
+    function updateTearing() {
+      tearData.forEach(({ el, slices }) => {
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        // Distance from mouse to element center
+        const dx = mouse.x - cx;
+        const dy = mouse.y - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Intensity = 0 when far, 1 when very close
+        const intensity = Math.max(0, 1 - dist / PROXIMITY);
+
+        if (intensity === 0) {
+          // Reset all slices
+          slices.forEach(s => {
+            s.style.transform = 'translate3d(0, 0, 0)';
+          });
+          return;
+        }
+
+        // Direction of tear based on mouse position relative to center
+        const dirX = dx / (dist || 1);
+
+        slices.forEach((slice, i) => {
+          // Alternate direction per slice, stronger at edges
+          const middle = (SLICE_COUNT - 1) / 2;
+          const distFromMiddle = (i - middle) / middle; // -1 to 1
+          const shiftX = dirX * distFromMiddle * MAX_SHIFT * intensity;
+          const shiftY = distFromMiddle * 2 * intensity;
+
+          // Subtle skew for a more organic tear feel
+          const skew = distFromMiddle * 1.5 * intensity;
+
+          slice.style.transform = `translate3d(${shiftX}px, ${shiftY}px, 0) skewX(${skew}deg)`;
+        });
+      });
+
+      requestAnimationFrame(updateTearing);
+    }
+    updateTearing();
   }
 
 
@@ -366,6 +507,8 @@
     initHeroParallax();
     initMagneticButtons();
     initTextReveal();
+    initMouseTrail();
+    initTextTearing();
   });
 
 })();
