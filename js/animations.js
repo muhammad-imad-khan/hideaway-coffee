@@ -366,7 +366,7 @@
         const scale = 1 - t * 0.85;    // shrink toward tail
         const opacity = 1 - t;          // fade toward tail
         trail[i].el.style.transform = `translate(${trail[i].x}px, ${trail[i].y}px) scale(${scale})`;
-        trail[i].el.style.opacity = opacity * 0.4;
+        trail[i].el.style.opacity = opacity * 0.6;
       }
 
       requestAnimationFrame(updateTrail);
@@ -389,29 +389,30 @@
     const tearData = [];
 
     targets.forEach(el => {
-      // Preserve original structure
       const text = el.innerHTML;
+
+      // Create an invisible sizer that keeps the natural height
+      const sizer = document.createElement('div');
+      sizer.className = 'tear-sizer';
+      sizer.innerHTML = text;
+
+      // Create the overlay wrapper for slices
       const wrapper = document.createElement('div');
       wrapper.className = 'tear-wrap';
       wrapper.setAttribute('aria-hidden', 'true');
 
-      // Create slices using clip-path
       for (let i = 0; i < SLICE_COUNT; i++) {
         const slice = document.createElement('div');
         slice.className = 'tear-slice';
         slice.innerHTML = text;
 
-        // Each slice shows a horizontal band
         const top = (i / SLICE_COUNT) * 100;
         const bottom = ((i + 1) / SLICE_COUNT) * 100;
         slice.style.clipPath = `polygon(0 ${top}%, 100% ${top}%, 100% ${bottom}%, 0 ${bottom}%)`;
-        slice.style.position = 'absolute';
-        slice.style.inset = '0';
-        slice.style.willChange = 'transform';
         wrapper.appendChild(slice);
       }
 
-      // Replace original content with tearing wrapper + hidden accessible copy
+      // Accessible hidden text
       const accessible = document.createElement('span');
       accessible.className = 'sr-only';
       accessible.textContent = el.textContent;
@@ -419,6 +420,7 @@
       el.style.position = 'relative';
       el.innerHTML = '';
       el.appendChild(accessible);
+      el.appendChild(sizer);
       el.appendChild(wrapper);
 
       tearData.push({

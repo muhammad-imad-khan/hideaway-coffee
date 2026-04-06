@@ -1040,27 +1040,34 @@ em { font-style: italic; color: var(--caramel); }
 /* ─── MOUSE TRAIL ────────────────────────────── */
 .trail-dot {
   position: fixed;
-  top: -3px; left: -3px;
-  width: 6px; height: 6px;
-  background: radial-gradient(circle, var(--caramel) 0%, rgba(201,168,130,0) 70%);
+  top: -4px; left: -4px;
+  width: 8px; height: 8px;
+  background: var(--caramel);
   border-radius: 50%;
   pointer-events: none;
   z-index: 9997;
   will-change: transform, opacity;
+  mix-blend-mode: multiply;
 }
 
 /* ─── TEXT TEARING ───────────────────────────── */
+.tear-sizer {
+  visibility: hidden;
+  pointer-events: none;
+}
 .tear-wrap {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+.tear-slice {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+  transition: transform 0.12s cubic-bezier(.4,0,.2,1);
 }
 .section-title,
 .hero-sub {
   overflow: visible;
-}
-.tear-slice {
-  transition: transform 0.12s cubic-bezier(.4,0,.2,1);
 }
 
 /* ─── REDUCED MOTION ─────────────────────────── */
