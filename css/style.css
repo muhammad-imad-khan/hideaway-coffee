@@ -946,6 +946,106 @@ em { font-style: italic; color: var(--caramel); }
   .contact-form-wrap { padding: 1.75rem; }
 }
 
+/* ─── 3D HERO CANVAS ─────────────────────────── */
+#hero-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ─── CUSTOM CURSOR ──────────────────────────── */
+@media (pointer: fine) {
+  * { cursor: none !important; }
+}
+
+.cursor-dot {
+  position: fixed;
+  top: -4px; left: -4px;
+  width: 8px; height: 8px;
+  background: var(--caramel);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform;
+  transition: width 0.25s ease, height 0.25s ease, background 0.25s ease, top 0.25s ease, left 0.25s ease;
+}
+.cursor-dot.cursor-hover {
+  width: 6px; height: 6px;
+  top: -3px; left: -3px;
+  background: var(--espresso);
+}
+
+.cursor-ring {
+  position: fixed;
+  top: -20px; left: -20px;
+  width: 40px; height: 40px;
+  border: 1.5px solid rgba(139,94,60,0.35);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  will-change: transform;
+  transition: width 0.35s cubic-bezier(.4,0,.2,1),
+              height 0.35s cubic-bezier(.4,0,.2,1),
+              top 0.35s cubic-bezier(.4,0,.2,1),
+              left 0.35s cubic-bezier(.4,0,.2,1),
+              border-color 0.35s ease,
+              background 0.35s ease;
+}
+.cursor-ring.cursor-hover {
+  width: 56px; height: 56px;
+  top: -28px; left: -28px;
+  border-color: rgba(139,94,60,0.15);
+  background: rgba(201,168,130,0.06);
+}
+
+/* ─── 3D CARD TILT ───────────────────────────── */
+.menu-card,
+.review-card,
+.about-card {
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(.4,0,.2,1), box-shadow 0.5s ease, border-color 0.5s ease;
+  will-change: transform;
+}
+
+/* ─── WORD REVEAL ANIMATION ──────────────────── */
+.word-reveal {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.word-inner {
+  display: inline-block;
+  transform: translateY(110%) rotateX(-40deg);
+  opacity: 0;
+  transition: transform 0.7s cubic-bezier(.22,1,.36,1), opacity 0.7s ease;
+}
+.word-inner.word-visible {
+  transform: translateY(0) rotateX(0);
+  opacity: 1;
+}
+
+/* ─── MAGNETIC BUTTON SMOOTHING ──────────────── */
+.btn {
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1), background 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+  will-change: transform;
+}
+
+/* ─── HERO BLOB SMOOTHING ────────────────────── */
+.hero-blob {
+  transition: transform 0.4s cubic-bezier(.4,0,.2,1);
+  will-change: transform;
+}
+
+/* ─── REDUCED MOTION ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .cursor-dot, .cursor-ring { display: none; }
+  * { cursor: auto !important; }
+  .word-inner { transform: none; opacity: 1; }
+  .hero-blob { transition: none; }
+  #hero-canvas { display: none; }
+}
+
 /* ─── UTILITIES ──────────────────────────────── */
 .sr-only {
   position: absolute;
